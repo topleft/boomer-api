@@ -34,12 +34,10 @@ Defining infrastructure as code allows the foundation of a system to be repeatab
         - [Method](#method)
         - [Deployment](#deployment)
         - [Stage](#stage)
-1. [Deploy and Test](#deployandtest)
+1. [**Deploy and Test**](#deployandtest)
 1. [**Consolidate**](#consolidate)
     - [Use Parameters](#useparameters)
     - [Use Outputs](#useoutputs)
-
-The phrase 'Ok, Boomer' has been thrown around the internet quite a bit these days. This theme is meant to be current and light hearted, please don't take it too seriously.
 
 ## Introduction
 
@@ -47,14 +45,16 @@ A diagram of what will be accomplished by the end of the tutorial:
 
 ![Flow Chart](https://blog.petej.org/content/images/2019/12/tutorial_flow_chart.png)
 
-**Finished [code in github](https://github.com/topleft/boomer-api).**
+[Finished code in github.](https://github.com/topleft/boomer-api)
 
 #### CloudFormation Template
 
 > [AWS CloudFormation Docs](https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/Welcome.html)
 
 
-Top level CloudFormation keys:
+CloudFormation templates are extremely flexible and extensible. So much of th AWS ecosystem can be instrumented via CloudFormation and it can be a little overwhelming when trying to learn. Have a look at the top level keys. There only 5 possibilities at the top level elements and everything that is written in a template will fit within one of these keys.
+
+5 Top level CloudFormation keys:
 
 ```
 {
@@ -75,13 +75,22 @@ Optional:
 - **Parameters** - variables to use within the template
 - **Outputs** - variables that can be accessed from other templates
 
-The **Resources** object is where most of the magic happens when writing CF templates. There are a [couple hundred resource types](https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-template-resource-type-ref.html) and each one has a different set of keys and values to specify how it will be configured.
+The **Resources** object is where most of the magic happens when writing CF templates. There are a [couple hundred resource types](https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-template-resource-type-ref.html) and each one has a different set of keys and values to specify how it will be configured. This tutorial will utilize 5 _Resource Types_:
+
+1. `AWS::IAM::Role`
+1. `AWS::Lambda::Function`
+1. `AWS::ApiGateway::RestApi`
+1. `AWS::ApiGateway::Method`
+1. `AWS::ApiGateway::Deployment`
 
 #### Intrinsic Functions
 
-There are many [functions](https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/intrinsic-function-reference.html) that can be used inside of CF templates to help with attribute access, concatenation, substitution, variable reference. These help greatly to make templates more reusable and maintainable.
+There are many [functions](https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/intrinsic-function-reference.html) that can be used inside of CF templates to help with attribute access, concatenation, substitution, variable reference. These help greatly to make templates more reusable and maintainable. The function syntax itself can look a bit cryptic, but upon a second look, it can be seen that they are generally performing very simple tasks.
 
 #### AWS CLI Setup
+
+This tutorial utilizes the AWS CLI for 100% of the interaction with AWS. Feel free to use the UI, but be sure to set up the CLI locally as well.
+
 >Do you have the AWS CLI installed ... not sure? Run:
 >
 >```sh
@@ -618,7 +627,7 @@ Update these values to reference the parameters:
 
 Have a look at the [final resources template](https://github.com/topleft/boomer-api/blob/master/cloudformation/resources.json) to see the parameters in context.
 
-And in the _cloudformation/roles.json_ therw are a couple values that could benefit from using parameters. Update the code to this:
+And in the _cloudformation/roles.json_ there are a couple values that could benefit from using parameters. Update the code to this:
 
 ```
 "Parameters": {
@@ -766,3 +775,4 @@ AWS IAM Roles are reusable collections of policies that are assigned to resource
 #### Why separate roles from other resources?
 Roles are powerful. They have the ability to breach our security or rack up the bill when used incorrectly. Typically roles don't need to be edited as often as other resources and can be shared between stacks if their templates are defined with this in mind. For these reasons, it is a good idea to separate them into their own template.
 
+\* The phrase 'Ok, Boomer' has been thrown around the internet quite a bit these days. This theme is meant to be current and light hearted, please don't take it too seriously.
