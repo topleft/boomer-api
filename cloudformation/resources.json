@@ -1,0 +1,112 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Parameters": {
+    "RolesStack": {
+      "Type": "String",
+      "Default": "pj-boomer-api-roles"
+    },
+    "HandlerCodeS3Bucket": {
+      "Type": "String",
+      "Default": "pj-lambda-functions"
+    },
+    "HandlerCodeS3Key": {
+      "Type": "String",
+      "Default": "boomer-api.zip"
+    }
+  },
+  "Resources": {
+    "BoomerHandler": {
+      "Type": "AWS::Lambda::Function",
+      "Properties": {
+        "FunctionName": "BoomerHandler",
+        "Handler": "function.handler",
+        "Role": {
+          "Fn::ImportValue": {
+            "Fn::Sub": "${RolesStack}-LambdaRoleArn"
+          }
+        },
+        "Code": {
+          "S3Bucket": {
+            "Ref": "HandlerCodeS3Bucket"
+          },
+          "S3Key": {
+            "Ref": "HandlerCodeS3Key"
+          }
+        },
+        "Runtime": "python3.6",
+        "Timeout": 300
+      }
+    },
+    "BoomerApi": {
+      "Type": "AWS::ApiGateway::RestApi",
+      "Properties": {
+        "Name": "boomer-api",
+        "Description": "API used for practice",
+        "FailOnWarnings": true
+      }
+    },
+    "RootGet": {
+      "Type": "AWS::ApiGateway::Method",
+      "DependsOn": ["BoomerApi"],
+      "Properties": {
+        "RestApiId": {
+          "Ref": "BoomerApi"
+        },
+        "ResourceId": {
+          "Fn::GetAtt": [
+            "BoomerApi",
+            "RootResourceId"
+          ]
+        },
+        "HttpMethod": "GET",
+        "AuthorizationType": "NONE",
+        "Integration": {
+          "Credentials": {
+            "Fn::ImportValue": {
+              "Fn::Sub": "${RolesStack}-ApiGatewayRoleArn"
+            }
+          },
+          "IntegrationHttpMethod": "POST",
+          "Type": "AWS_PROXY",
+          "Uri": {
+            "Fn::Join": ["",
+              [
+                "arn:aws:apigateway:",
+                {
+                  "Ref": "AWS::Region"
+                },
+                ":lambda:path/2015-03-31/functions/",
+                {
+                  "Fn::GetAtt": ["BoomerHandler", "Arn"]
+                },
+                "/invocations"
+              ]
+            ]
+          }
+        }
+      }
+    },
+    "Deployment": {
+      "DependsOn": ["BoomerApi", "RootGet"],
+      "Type": "AWS::ApiGateway::Deployment",
+      "Properties": {
+        "RestApiId": {
+          "Ref": "BoomerApi"
+        }
+      }
+    },
+    "Stage": {
+      "DependsOn": ["BoomerApi", "Deployment"],
+      "Type": "AWS::ApiGateway::Stage",
+      "Properties": {
+        "StageName": "dev",
+        "RestApiId": {
+          "Ref": "BoomerApi"
+        },
+        "DeploymentId": {
+          "Ref": "Deployment"
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,144 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Parameters": {
+    "LambdaFnS3Bucket": {
+      "Type": "String",
+      "Default": "pj-lambda-functions"
+    },
+    "LambdaResources": {
+      "Type": "CommaDelimitedList",
+      "Default": "*",
+      "Description": "Lambda resources (arn:aws:lambda:us-west-2:aws-account-number:function:my-function) in the form of a comma separated string that this api will need to invoke. Defaults to * but should be updated once the lambda(s) is/are created."
+    },
+    "ApiId": {
+      "Type": "String",
+      "Default": "*",
+      "Description": "Enter the id of the api you wish to control with this role. Defaults to *, but should be updated once api is created."
+    }
+  },
+  "Resources": {
+    "LambdaRole": {
+      "Type": "AWS::IAM::Role",
+      "Properties": {
+        "RoleName": "pj-basic-lambda",
+        "AssumeRolePolicyDocument": {
+          "Version": "2012-10-17",
+          "Statement": [{
+            "Effect": "Allow",
+            "Principal": {
+              "Service": ["lambda.amazonaws.com"]
+            },
+            "Action": ["sts:AssumeRole"]
+          }]
+        },
+        "Path": "/",
+        "Policies": [{
+            "PolicyName": "AWSLambdaBasicExecutionRole",
+            "PolicyDocument": {
+              "Version": "2012-10-17",
+              "Statement": [{
+                "Effect": "Allow",
+                "Action": [
+                  "logs:CreateLogGroup",
+                  "logs:CreateLogStream",
+                  "logs:PutLogEvents"
+                ],
+                "Resource": "*"
+              }]
+            }
+          },
+          {
+            "PolicyName": "AmazonS3GetObject",
+            "PolicyDocument": {
+              "Version": "2012-10-17",
+              "Statement": [{
+                "Effect": "Allow",
+                "Action": "s3:GetObject",
+                "Resource": [{
+                    "Fn::Sub": "arn:aws:s3:::${LambdaFnS3Bucket}/"
+                  },
+                  {
+                    "Fn::Sub": "arn:aws:s3:::${LambdaFnS3Bucket}/*"
+                  }
+                ]
+              }]
+            }
+          }
+        ]
+      }
+    },
+    "ApiGatewayRole": {
+      "Type": "AWS::IAM::Role",
+      "Properties": {
+        "RoleName": "pj-api-for-lambda",
+        "AssumeRolePolicyDocument": {
+          "Version": "2012-10-17",
+          "Statement": [{
+            "Effect": "Allow",
+            "Principal": {
+              "Service": ["apigateway.amazonaws.com"]
+            },
+            "Action": ["sts:AssumeRole"]
+          }]
+        },
+        "Policies": [{
+            "PolicyName": "AWSApiGateWay",
+            "PolicyDocument": {
+              "Version": "2012-10-17",
+              "Statement": [{
+                "Effect": "Allow",
+                "Action": "lambda:InvokeFunction",
+                "Resource": {
+                  "Ref": "LambdaResources"
+                }
+              }]
+            }
+          },
+          {
+            "PolicyName": "ApiGatewayFullAccess",
+            "PolicyDocument": {
+              "Version": "2012-10-17",
+              "Statement": [{
+                "Effect": "Allow",
+                "Action": [
+                  "apigateway:*"
+                ],
+                "Resource": [{
+                    "Fn::Sub": "arn:aws:apigateway:us-east-1::/restapis/${ApiId}/stages"
+                  },
+                  {
+                    "Fn::Sub": "arn:aws:apigateway:us-east-1::/restapis/${ApiId}/stages/*"
+                  }
+                ]
+              }]
+            }
+          }
+        ]
+      }
+    }
+  },
+  "Outputs": {
+    "LambdaRole": {
+      "Description": "Basic Lambda Role Arn: cloudwatch and s3 access",
+      "Value": {
+        "Fn::GetAtt": ["LambdaRole", "Arn"]
+      },
+      "Export": {
+        "Name": {
+          "Fn::Sub": "${AWS::StackName}-LambdaRoleArn"
+        }
+      }
+    },
+    "ApiGatewayRole": {
+      "Description": "Apigateway Role Arn: full apigateway and invoke lambda access",
+      "Value": {
+        "Fn::GetAtt": ["ApiGatewayRole", "Arn"]
+      },
+      "Export": {
+        "Name": {
+          "Fn::Sub": "${AWS::StackName}-ApiGatewayRoleArn"
+        }
+      }
+    }
+  }
+}
