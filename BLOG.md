@@ -47,7 +47,7 @@ A diagram of what will be accomplished by the end of the tutorial:
 
 ![Flow Chart](https://blog.petej.org/content/images/2019/12/tutorial_flow_chart.png)
 
-**Finished [code in github](TODO:github_repo).**
+**Finished [code in github](https://github.com/topleft/boomer-api).**
 
 #### CloudFormation Template
 
@@ -616,7 +616,7 @@ Update these values to reference the parameters:
 |`Resources.Stage.Properties.RestApiId`|`{ "Ref": "BoomerApi"}`|
 |`Resources.Stage.Properties.DeploymentId`|`{ "Ref": "Deployment"}`|
 
-Have a look at the [final resources template](TODO:linktogithub) to see the parameters in context.
+Have a look at the [final resources template](https://github.com/topleft/boomer-api/blob/master/cloudformation/resources.json) to see the parameters in context.
 
 And in the _cloudformation/roles.json_ therw are a couple values that could benefit from using parameters. Update the code to this:
 
@@ -688,7 +688,7 @@ And in the _cloudformation/roles.json_ therw are a couple values that could bene
 
 The `LambdaResources` parameters is defaulting to `*`, which is fine for now, but when this stack is updated, `--parameters LambdaFnS3Bucket=pj-lambda-functions` should be added to the command to limit what resources this role can access.
 
-Have a look at the [final roles template](TODO:linktogithub) to see the parameters in context.
+Have a look at the [final roles template](https://github.com/topleft/boomer-api/blob/master/cloudformation/roles.json) to see the parameters in context.
 
 
 ### Use outputs
