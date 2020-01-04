@@ -6,12 +6,18 @@ Defining infrastructure as code allows the foundation of a system to be repeatab
 >
 > \- AWS
 
+**What practical problems does _Infrastructure as Code_ solve?**
+
+There are many scenarios that can benefit from defining infrastructure with code, but in my experience, I think that growing teams who are building out micro-service based solutions have the most to gain. As engineering organizations grow from small (5-20 engineers) to larger (20+), they end up losing the consistent, direct communication lines that act as the glue holding the continuous development of distributed systems together. When teams are small information travels quickly and accurately, valuable impromptu discussions happen more frequently, and decision makers are generally accessible to the entire organization. When teams grow responsibility shifts from individuals to groups, communication becomes more rigid and prescribed, and the pace of decision making is slowed. In an effort to maintain speed and agility engineers will limit their scope to within their own team. This can cause broader organizational issues such as wildly different solutions to the same problems, difficulty in sharing projects and responsibilities, and one-off solutions that drain productivity and moral because the scale of 'value vs maintenance' is unbalanced. Teams become specialized in their stack, build up unhealthy levels of 'tribal knowledge', lose the incentive to properly document and maintain projects and are generally less flexible to share workloads with each other. One way of eliminating some of this burden is standardize the configuration of foundational components. This allows teams to share ownership across the platform, maintain the same resources and documentation, and utilize a similar set of technologies and patterns throughout the organization. Teams will not have to re-learn solutions that the organization has already solved and deployed. Instead they can pull a template from a shared repository, make minor adjustments, and deploy functional units of infrastructure, thus spending more time achieving business goals by limiting redundant technology decisions.
+
 ##### This tutorial demonstrates:
 1. The basics of CloudFormation
 1. How to work with the AWS CLI
 1. Creating IAM roles
 1. Creating a Python Lambda function
 1. Creating a rest API with APIGateway
+
+This tutorial assumes that the reader is familiar with creating resources in AWS using the Console (UI) and is looking for ways to make the process simpler and more accessible to their greater organization. While the AWS Console is essential and very helpful for many tasks, it can be difficult to navigate and leave the user confused about, or at least unaware of, the options and relationships within their account. The focus here will be on utilizing json to define an API interface powered by lambda in an effort to create understandable, robust systems that are easy for engineers to interact with and maintain. Finally, Parameters and Outputs will be introduced to eliminate redundancy and increase reusability within CloudFormation templates.
 
 #### Table of Contents
 
@@ -50,7 +56,6 @@ This is a diagram of what will be accomplished by the end of the tutorial:
 
 > [AWS CloudFormation Docs](https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/Welcome.html)
 
-
 CloudFormation templates are extremely flexible and extensible. Much of the AWS ecosystem can be instrumented via CloudFormation and it can be overwhelming when investigating for the first time. To simplify things, understand that there only five top level elements in CloudFormation templates and everything that is written in a template will fit within one of these keys.
 
 5 Top level CloudFormation keys:
@@ -70,7 +75,7 @@ CloudFormation templates are extremely flexible and extensible. Much of the AWS 
     - **Resources** - defines the object(s) within AWS that you are creating
 
 - **Optional Keys**:
-    - **Description** - a human readable string describing you stack
+    - **Description** - a human readable string describing the stack
     - **Parameters** - variables to use within the template
     - **Outputs** - variables that can be accessed from other templates
 
@@ -125,7 +130,7 @@ Structure:
 
 #### Create Lambda IAM Role
 
-AWS IAM Roles are reusable collections of policies that are assigned to resources in AWS. A policy is an object in AWS that, when associated with an identity or resource, defines their permissions. In other words, roles and policies are define _what_ and _who_. When associated with resources they control _what_ a resource can do and _who_ that resource can do it with.
+AWS IAM Roles are reusable collections of policies that are assigned to resources in AWS. A policy is an object in AWS that, when associated with an identity or resource, defines their permissions. In other words, roles and policies define _what_ and _who_. When associated with resources they control _what_ a resource can do and _who_ that resource can do it with.
 
 > [Amazon IAM Documentation](https://docs.aws.amazon.com/iam/?id=docs_gateway)
 
@@ -225,7 +230,7 @@ If successful, this will result in output that looks like:
 ```
 
 **Why separate roles from other resources?**
-It may have been noticed in the Project Setup that there are two separate files in the _cloudformation/_ directory, _roles.json_ and _resources.json_. Roles are powerful as they have the ability to breach our security or rack up the bill when used incorrectly. Typically roles don't need to be edited as often as other resources and can be shared between stacks if their templates are defined with this in mind. For these reasons, it is a good idea to separate them into their own template.
+It may have been noticed during the Project Setup that there are two separate files in the _cloudformation/_ directory, _roles.json_ and _resources.json_. Roles are powerful as they have the ability to breach our security or rack up the bill when used incorrectly. Typically roles don't need to be edited as often as other resources and can be shared between stacks if their templates are defined with this in mind. For these reasons, it is a good idea to separate them into their own template.
 
 
 #### Lambda Function
@@ -606,7 +611,7 @@ In an effort to make these stacks more readable, maintainable and reusable, cert
 
 ### Use Parameters
 
-Parameters allow the template to take in values dynamically when creating or updating a stack. As well, by taking advantage of default values the parameters to remove redundancy from the template and they serve to highlight custom values making the code easier to read.
+Parameters allow the template to take in values dynamically when creating or updating a stack. As well, by taking advantage of default values, the parameters remove redundancy from the template and they serve to highlight customizable fields making the code easier to read.
 
 > [AWS CloudFormation Parameters Documentation](https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/parameters-section-structure.html)
 
